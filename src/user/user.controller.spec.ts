@@ -1,5 +1,3 @@
-// src/user/user.controller.spec.ts
-
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   INestApplication,

@@ -15,6 +15,12 @@ export class UserService {
     private readonly jwtService: JwtService,
   ) {}
 
+  /**
+   * Finds a user by their ID and returns selected fields (name, email, city).
+   * @param {number} id - The ID of the user to find.
+   * @returns {Promise<Pick<User, 'name' | 'email' | 'city'>>} A Promise resolving to an object containing the user's name, email, and city.
+   * @throws {HttpException} If the user is not found.
+   */
   async findOne(id: number): Promise<Pick<User, 'name' | 'email' | 'city'>> {
     const user = await this.userRepo.findOne({
       where: { id },
@@ -26,6 +32,14 @@ export class UserService {
     return user;
   }
 
+  /**
+   * Creates a new user and saves them to the database.
+   * Also generates a JWT token and sets it as a cookie in the response.
+   * @param {CreateUserDto} body - The data transfer object containing the user creation details.
+   * @param {Response} res - The HTTP response object to set the cookie on.
+   * @returns {Promise<User>} A Promise resolving to the newly created user entity.
+   * @throws {HttpException} If the email already exists or the location is not within Egypt.
+   */
   async create(body: CreateUserDto, res: Response): Promise<User> {
     const { name, email, latitude, longitude } = body;
 
@@ -66,6 +80,7 @@ export class UserService {
       },
     );
 
+    // Set the token as an HTTP-only cookie in the response
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

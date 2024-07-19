@@ -2,9 +2,7 @@ import {
   Body,
   Controller,
   Get,
-  HttpCode,
   HttpStatus,
-  Param,
   Post,
   Query,
   Res,
@@ -22,6 +20,14 @@ import { BypassGuard } from '../common/decorators/bypass-guard.decorator';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  /**
+   * Endpoint to sign up a new user.
+   * Uses ValidationPipe to validate the request body against CreateUserDto.
+   * Applies BypassGuard to allow unauthenticated access to this endpoint.
+   * @param body - The request body containing user signup details.
+   * @param res - The response object to set cookies and return the response.
+   * @returns The created user and sets a JWT token as an HTTP-only cookie.
+   */
   @Post('/signup')
   @UsePipes(ValidationPipe)
   @BypassGuard()
@@ -30,6 +36,12 @@ export class UserController {
     return res.status(HttpStatus.CREATED).json(user);
   }
 
+  /**
+   * Endpoint to get a user's profile.
+   * Uses AuthGuard to ensure the request is authenticated.
+   * @param userId - The ID of the user to retrieve.
+   * @returns The user's profile information.
+   */
   @Get()
   @UseGuards(AuthGuard)
   async getProfile(@Query('user_id') userId: number) {
