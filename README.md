@@ -14,6 +14,7 @@ This is the `Shezlong` project built with NestJS, a progressive Node.js framewor
   - [Unit Tests](#unit-tests)
   - [End-to-End Tests](#end-to-end-tests)
 - [Linting and Formatting](#linting-and-formatting)
+- [Postman Documentation](postman-documentation)
 - [License](#license)
 
 ## Description
@@ -103,6 +104,12 @@ This project uses MariaDB as the database. Follow these steps to set up MariaDB:
    DATABASE_NAME=shezlong
    JWT_SECRET=shezlong-task
    ```
+
+## Postman Documentation
+
+You can access the Postman documentation for the Shezlong API at the following link:
+
+[Shezlong API Postman Documentation](https://documenter.getpostman.com/view/19860605/2sA3kUG2Pi)
 
 ## Running the App
 
