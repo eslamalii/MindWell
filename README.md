@@ -7,14 +7,10 @@ This is the `Shezlong` project built with NestJS, a progressive Node.js framewor
 - [Description](#description)
 - [Installation](#installation)
 - [Database Setup](#database-setup)
+- [Postman Documentation](#postman-documentation)
 - [Running the App](#running-the-app)
   - [Development](#development)
-- [Testing](#testing)
-  - [Unit Tests](#unit-tests)
-  - [End-to-End Tests](#end-to-end-tests)
-- [Linting and Formatting](#linting-and-formatting)
-- [Postman Documentation](postman-documentation)
-- [License](#license)
+- [Unit Tests](#unit-tests)
 
 ## Description
 
@@ -118,4 +114,12 @@ To start the app in development mode with hot-reload enabled:
 
 ```sh
 npm run start:dev
+```
+
+### Unit Tests
+
+executes the unit tests using Jest, the default testing framework in NestJS projects.
+
+```sh
+npm run test
 ```
