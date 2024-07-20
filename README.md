@@ -9,7 +9,6 @@ This is the `Shezlong` project built with NestJS, a progressive Node.js framewor
 - [Database Setup](#database-setup)
 - [Running the App](#running-the-app)
   - [Development](#development)
-  - [Production](#production)
 - [Testing](#testing)
   - [Unit Tests](#unit-tests)
   - [End-to-End Tests](#end-to-end-tests)

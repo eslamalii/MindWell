@@ -1,144 +1,104 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  INestApplication,
-  HttpStatus,
-  UnauthorizedException,
-} from '@nestjs/common';
-import request from 'supertest';
-import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { AuthGuard } from '../common/guards/auth.guard';
-import { Reflector } from '@nestjs/core';
-import cookieParser from 'cookie-parser';
-import { JwtService } from '@nestjs/jwt';
-import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env' });
+import { UserService } from './user.service';
+import { Response } from 'express';
+import { HttpStatus } from '@nestjs/common';
 
-describe('UserController (e2e)', () => {
-  let app: INestApplication;
-  let jwtService: JwtService;
-  let token: string;
+describe('UserController', () => {
+  let controller: UserController;
+  let service: UserService;
+  let mockRes: Partial<Response>;
 
-  const mockUserService = {
-    create: jest.fn(),
-    findOne: jest.fn(),
-  };
+  beforeEach(async () => {
+    mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
 
-  beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    const module: TestingModule = await Test.createTestingModule({
       controllers: [UserController],
       providers: [
-        { provide: UserService, useValue: mockUserService },
-        JwtService,
-        Reflector,
+        {
+          provide: UserService,
+          useValue: {
+            create: jest.fn(),
+            findOne: jest.fn(),
+          },
+        },
       ],
-    })
-      .overrideGuard(AuthGuard)
-      .useValue({
-        canActivate: jest.fn((context) => {
-          const request = context.switchToHttp().getRequest();
-          const token =
-            request.headers.authorization?.split(' ')[1] ||
-            request.cookies['token'];
-          if (token) {
-            try {
-              const decodedToken = jwtService.verify(token, {
-                secret: process.env.JWT_SECRET,
-              });
-              request.user = decodedToken;
-              return true;
-            } catch (error) {
-              throw new UnauthorizedException('Invalid token');
-            }
-          }
-          throw new UnauthorizedException('No token provided');
-        }),
-      })
-      .compile();
+    }).compile();
 
-    app = moduleFixture.createNestApplication();
-    app.use(cookieParser());
-    jwtService = moduleFixture.get<JwtService>(JwtService);
-    token = jwtService.sign(
-      { userId: 2 },
-      {
-        secret: process.env.JWT_SECRET,
-        expiresIn: '2h',
-      },
-    );
-
-    await app.init();
+    controller = module.get<UserController>(UserController);
+    service = module.get<UserService>(UserService);
   });
 
-  afterAll(async () => {
-    await app.close();
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
   });
 
-  it('/user/signup (POST)', async () => {
-    const createUserDto = {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      latitude: 30.0444,
-      longitude: 31.2357,
-    };
-    const userResponse = {
-      ...createUserDto,
-      id: 1,
-    };
-
-    mockUserService.create.mockResolvedValue(userResponse);
-
-    return request(app.getHttpServer())
-      .post('/user/signup')
-      .send(createUserDto)
-      .expect(HttpStatus.CREATED)
-      .expect(userResponse);
-  });
-
-  describe('GET /user', () => {
-    it('should return user profile with 200 status', async () => {
-      const userId = 4;
-      const userProfile = {
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        city: 'Cairo',
+  describe('signup', () => {
+    it('should create a new user and return it', async () => {
+      const dto = {
+        name: 'test',
+        email: 'test@test.com',
+        latitude: 29.970089,
+        longitude: 31.243959,
       };
 
-      mockUserService.findOne.mockResolvedValue(userProfile);
+      const result = {
+        id: 7,
+        name: 'test',
+        email: 'test@test.com',
+        latitude: 29.970089,
+        longitude: 31.243959,
+        city: 'El Maadi',
+        created_at: '2024-07-20T00:16:50.427Z',
+      };
 
-      return request(app.getHttpServer())
-        .get(`/user?user_id=${userId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .expect(HttpStatus.OK)
-        .expect(userProfile);
+      jest.spyOn(service, 'create').mockResolvedValue(result as any);
+
+      await controller.signup(dto, mockRes as any);
+
+      expect(service.create).toHaveBeenCalledWith(dto, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(HttpStatus.CREATED);
+      expect(mockRes.json).toHaveBeenCalledWith(result);
     });
 
-    it('should return 401 if no token is provided', async () => {
-      const userId = 4;
+    it('should handle errors when creating a user', async () => {
+      const dto = {
+        name: 'test',
+        email: 'test@test.com',
+        latitude: 29.970089,
+        longitude: 31.243959,
+      };
+      const error = new Error('User creation failed');
+      jest.spyOn(service, 'create').mockRejectedValue(error);
 
-      return request(app.getHttpServer())
-        .get(`/user?user_id=${userId}`)
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'No token provided',
-          error: 'Unauthorized',
-        });
+      await controller.signup(dto, mockRes as any);
+
+      expect(mockRes.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: error.message });
+    });
+  });
+
+  describe('getProfile', () => {
+    it('should return user profile', async () => {
+      const result = { name: 'John', email: 'john@example.com', city: 'Cairo' };
+      jest.spyOn(service, 'findOne').mockResolvedValue(result as any);
+
+      const userId = 1;
+      const response = await controller.getProfile(userId);
+
+      expect(service.findOne).toHaveBeenCalledWith(userId);
+      expect(response).toEqual(result);
     });
 
-    it('should return 401 if invalid token is provided', async () => {
-      const userId = 2;
-      const invalidToken = 'invalid.token.here';
+    it('should handle errors when fetching user profile', async () => {
+      const userId = 1;
+      const error = new Error('User not found');
+      jest.spyOn(service, 'findOne').mockRejectedValue(error);
 
-      return request(app.getHttpServer())
-        .get(`/user?user_id=${userId}`)
-        .set('Authorization', `Bearer ${invalidToken}`)
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Invalid token',
-          error: 'Unauthorized',
-        });
+      await expect(controller.getProfile(userId)).rejects.toThrow(error);
     });
   });
 });

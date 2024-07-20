@@ -1,16 +1,16 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from './user.entity';
-import { UserRepository } from './user.repository';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { GeocodingService } from './geocoding.service';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User) private readonly userRepo: UserRepository,
+    @InjectRepository(User) private readonly userRepo: Repository<User>,
     private readonly geoService: GeocodingService,
     private readonly jwtService: JwtService,
   ) {}

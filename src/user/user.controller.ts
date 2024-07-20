@@ -31,9 +31,16 @@ export class UserController {
   @Post('/signup')
   @UsePipes(ValidationPipe)
   @BypassGuard()
-  async signup(@Body() body: CreateUserDto, @Res() res: Response) {
-    const user = await this.userService.create(body, res);
-    return res.status(HttpStatus.CREATED).json(user);
+  async signup(
+    @Body() body: CreateUserDto,
+    @Res() res: Response,
+  ): Promise<void> {
+    try {
+      const user = await this.userService.create(body, res);
+      res.status(HttpStatus.CREATED).json(user);
+    } catch (error) {
+      res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+    }
   }
 
   /**
