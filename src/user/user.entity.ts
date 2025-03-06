@@ -16,15 +16,15 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column('decimal', { precision: 10, scale: 7 })
+  @Column('float')
   latitude: number;
 
-  @Column('decimal', { precision: 10, scale: 7 })
+  @Column('float')
   longitude: number;
 
-  @Column()
+  @Column({ nullable: true })
   city: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'datetime' })
   created_at: Date;
 }
